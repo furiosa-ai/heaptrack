@@ -30,3 +30,4 @@ compile_commands.json
 build*/
 *.zst
 *.AppImage
+heaptrack_test/target
