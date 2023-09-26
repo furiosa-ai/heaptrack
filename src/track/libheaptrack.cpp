@@ -55,6 +55,7 @@ __attribute__((weak)) extern void __freeres();
 }
 
 uint64_t g_allocSizeThreshold = 0;
+#include <tsl/robin_set.h>
 
 /**
  * uncomment this to get extended debug code for known pointers
@@ -528,6 +529,9 @@ public:
         if (!s_data || !s_data->out.canWrite()) {
             return;
         }
+        if (ptr == nullptr) {
+            return;
+        }
         updateModuleCache();
 
         const auto index = s_data->traceTree.index(trace, [](uintptr_t ip, uint32_t index) {
@@ -539,6 +543,8 @@ public:
 
             return s_data->out.writeHexLine('t', ip, index);
         });
+
+        s_data->allocations.insert(ptr);
 
 #ifdef DEBUG_MALLOC_PTRS
         auto it = s_data->known.find(ptr);
@@ -553,6 +559,15 @@ public:
     {
         if (!s_data || !s_data->out.canWrite()) {
             return;
+        }
+        if (ptr == nullptr) {
+            return;
+        }
+        auto it = s_data->allocations.find(ptr);
+        if (it == s_data->allocations.end()) {
+            return;
+        } else {
+            s_data->allocations.erase(it);
         }
 
 #ifdef DEBUG_MALLOC_PTRS
@@ -789,6 +804,8 @@ private:
         std::thread timerThread;
 
         heaptrack_callback_t stopCallback = nullptr;
+
+        tsl::robin_set<void *> allocations;
 
 #ifdef DEBUG_MALLOC_PTRS
         tsl::robin_set<void*> known;

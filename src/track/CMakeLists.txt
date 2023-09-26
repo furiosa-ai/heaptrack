@@ -45,6 +45,7 @@ target_link_libraries(heaptrack_preload LINK_PRIVATE
     ${LIBUTIL_LIBRARY}
     heaptrack_unwind
     rt
+    tsl::robin_map
 )
 
 set_target_properties(heaptrack_preload PROPERTIES
