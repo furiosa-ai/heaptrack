@@ -54,6 +54,8 @@ namespace __gnu_cxx {
 __attribute__((weak)) extern void __freeres();
 }
 
+uint64_t g_allocSizeThreshold = 0;
+
 /**
  * uncomment this to get extended debug code for known pointers
  * there are still some malloc functions I'm missing apparently,
@@ -282,7 +284,7 @@ public:
         s_lock.unlock();
     }
 
-    void initialize(const char* fileName, heaptrack_callback_t initBeforeCallback,
+    void initialize(const char* fileName, uint64_t allocSizeThreshold, heaptrack_callback_t initBeforeCallback,
                     heaptrack_callback_initialized_t initAfterCallback, heaptrack_callback_t stopCallback)
     {
         debugLog<MinimalOutput>("initializing: %s", fileName);
@@ -290,6 +292,8 @@ public:
             debugLog<MinimalOutput>("%s", "already initialized");
             return;
         }
+
+        g_allocSizeThreshold = allocSizeThreshold;
 
         if (initBeforeCallback) {
             debugLog<MinimalOutput>("%s", "calling initBeforeCallback");
@@ -824,7 +828,7 @@ static void heaptrack_realloc_impl(void* ptr_in, size_t size, void* ptr_out)
 
 extern "C" {
 
-void heaptrack_init(const char* outputFileName, heaptrack_callback_t initBeforeCallback,
+void heaptrack_init(const char* outputFileName, uint64_t allocSizeThreshold, heaptrack_callback_t initBeforeCallback,
                     heaptrack_callback_initialized_t initAfterCallback, heaptrack_callback_t stopCallback)
 {
     RecursionGuard guard;
@@ -835,7 +839,7 @@ void heaptrack_init(const char* outputFileName, heaptrack_callback_t initBeforeC
     debugLog<MinimalOutput>("heaptrack_init(%s)", outputFileName);
 
     POTENTIALLY_UNUSED auto ret = HeapTrack::op(guard, [&](HeapTrack& heaptrack) {
-        heaptrack.initialize(outputFileName, initBeforeCallback, initAfterCallback, stopCallback);
+        heaptrack.initialize(outputFileName, allocSizeThreshold, initBeforeCallback, initAfterCallback, stopCallback);
     });
     assert(ret);
 }
@@ -869,6 +873,11 @@ void heaptrack_resume()
 
 void heaptrack_malloc(void* ptr, size_t size)
 {
+    if (g_allocSizeThreshold) {
+        if (size < g_allocSizeThreshold) {
+            return;
+        }
+    }
     if (!HeapTrack::isPaused() && ptr && !RecursionGuard::isActive) {
         RecursionGuard guard;
 
@@ -894,6 +903,12 @@ void heaptrack_free(void* ptr)
 
 void heaptrack_realloc(void* ptr_in, size_t size, void* ptr_out)
 {
+    if (g_allocSizeThreshold) {
+        if (size < g_allocSizeThreshold) {
+            heaptrack_free(ptr_in);
+            return;
+        }
+    }
     heaptrack_realloc_impl(ptr_in, size, ptr_out);
 }
 

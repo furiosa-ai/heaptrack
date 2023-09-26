@@ -538,7 +538,7 @@ extern "C" {
 void heaptrack_inject(const char* outputFileName) noexcept
 {
     heaptrack_init(
-        outputFileName, &overwrite_symbols, [](LineWriter& out) { out.write("A\n"); }, &restore_symbols);
+        outputFileName, 0, &overwrite_symbols, [](LineWriter& out) { out.write("A\n"); }, &restore_symbols);
 }
 }
 
@@ -553,7 +553,7 @@ struct HeaptrackInjectPreloadInitialization
             // when the env var wasn't set, then this means we got runtime injected, don't do anything here
             return;
         }
-        heaptrack_init(outputFileName, &overwrite_symbols, nullptr, &restore_symbols);
+        heaptrack_init(outputFileName, 0, &overwrite_symbols, nullptr, &restore_symbols);
     }
 };
 

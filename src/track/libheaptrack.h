@@ -18,7 +18,7 @@ typedef struct LineWriter linewriter_t;
 typedef void (*heaptrack_callback_t)();
 typedef void (*heaptrack_callback_initialized_t)(linewriter_t&);
 
-void heaptrack_init(const char* outputFileName, heaptrack_callback_t initCallbackBefore,
+void heaptrack_init(const char* outputFileName, uint64_t allocSizeThreshold, heaptrack_callback_t initCallbackBefore,
                     heaptrack_callback_initialized_t initCallbackAfter, heaptrack_callback_t stopCallback);
 
 void heaptrack_stop();
