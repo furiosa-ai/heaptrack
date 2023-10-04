@@ -14,6 +14,8 @@
 
 #include <cinttypes>
 #include <cstdio>
+#include <cstdlib>
+#include <string.h>
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
@@ -43,6 +45,31 @@ void Trace::print()
         fprintf(stderr, "#%-2d 0x%016" PRIxPTR " sp=0x%016" PRIxPTR " %s + 0x%" PRIxPTR "\n", frameNr,
                 static_cast<uintptr_t>(ip), static_cast<uintptr_t>(sp), symbol, static_cast<uintptr_t>(offset));
     }
+#endif
+}
+
+bool Trace::isSomeProcListed(const char **strings, const unsigned int *lengths, unsigned int listSize, unsigned int maxLengthPlusTwo)
+{
+    if (listSize == 0) {
+        return false;
+    }
+#if LIBUNWIND_HAS_UNW_GETCONTEXT && LIBUNWIND_HAS_UNW_INIT_LOCAL
+    unw_context_t context; unw_cursor_t cursor;
+    unw_word_t offset;
+    unw_getcontext(&context);
+    unw_init_local(&cursor, &context);
+    char buf[HEAPTRACK_PRELOAD_FUNCTION_NAME_FILTER_MAX_LENGTH];
+    while (unw_step(&cursor)) {
+        unw_get_proc_name(&cursor, buf, maxLengthPlusTwo, &offset);
+        for (unsigned int i = 0; i < listSize; i++) {
+            if (strncmp(buf, strings[i], lengths[i]) == 0) {
+                if (buf[lengths[i]] == '\0') {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 #endif
 }
 

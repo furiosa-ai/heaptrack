@@ -9,6 +9,9 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
+
+#define HEAPTRACK_PRELOAD_FUNCTION_NAME_FILTER_MAX_LENGTH 1024
 
 /**
  * @brief Backtrace interface.
@@ -70,6 +73,8 @@ struct Trace
     static void setup();
 
     static void print();
+
+    static bool isSomeProcListed(const char **strings, const unsigned int *lengths, unsigned int size, unsigned int maxLength);
 
 private:
     static int unwind(void** data);

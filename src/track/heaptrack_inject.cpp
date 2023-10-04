@@ -74,6 +74,10 @@ __attribute__((weak)) void* mi_realloc(void* p, size_t newsize) LIBC_FUN_ATTRS;
 __attribute__((weak)) void mi_free(void* p) LIBC_FUN_ATTRS;
 }
 
+extern "C" {
+    heaptrack_3rd_config_t ht3config = {0, 0, 2, {}, {}};
+}
+
 namespace {
 
 namespace Elf {
@@ -538,7 +542,7 @@ extern "C" {
 void heaptrack_inject(const char* outputFileName) noexcept
 {
     heaptrack_init(
-        outputFileName, 0, &overwrite_symbols, [](LineWriter& out) { out.write("A\n"); }, &restore_symbols);
+        outputFileName, &overwrite_symbols, [](LineWriter& out) { out.write("A\n"); }, &restore_symbols);
 }
 }
 
@@ -553,7 +557,7 @@ struct HeaptrackInjectPreloadInitialization
             // when the env var wasn't set, then this means we got runtime injected, don't do anything here
             return;
         }
-        heaptrack_init(outputFileName, 0, &overwrite_symbols, nullptr, &restore_symbols);
+        heaptrack_init(outputFileName, &overwrite_symbols, nullptr, &restore_symbols);
     }
 };
 

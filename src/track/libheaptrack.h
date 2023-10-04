@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define HEAPTRACK_FUNCTION_NAME_FILTER_MAX_SIZE 256
+
 #ifdef __cplusplus
 typedef class LineWriter linewriter_t;
 extern "C" {
@@ -18,8 +20,22 @@ typedef struct LineWriter linewriter_t;
 typedef void (*heaptrack_callback_t)();
 typedef void (*heaptrack_callback_initialized_t)(linewriter_t&);
 
-void heaptrack_init(const char* outputFileName, uint64_t allocSizeThreshold, heaptrack_callback_t initCallbackBefore,
-                    heaptrack_callback_initialized_t initCallbackAfter, heaptrack_callback_t stopCallback);
+typedef struct {
+    uint64_t allocSizeThreshold;
+    unsigned int numFuncName;
+    unsigned int maxLengthPlusTwo;
+    const char *funcNameStrings[HEAPTRACK_FUNCTION_NAME_FILTER_MAX_SIZE];
+    unsigned int funcNameLengths[HEAPTRACK_FUNCTION_NAME_FILTER_MAX_SIZE];
+} heaptrack_3rd_config_t;
+
+extern heaptrack_3rd_config_t ht3config;
+
+void heaptrack_init(
+    const char* outputFileName,
+    heaptrack_callback_t initCallbackBefore,
+    heaptrack_callback_initialized_t initCallbackAfter,
+    heaptrack_callback_t stopCallback
+);
 
 void heaptrack_stop();
 
