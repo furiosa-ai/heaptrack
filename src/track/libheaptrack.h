@@ -20,15 +20,20 @@ typedef struct LineWriter linewriter_t;
 typedef void (*heaptrack_callback_t)();
 typedef void (*heaptrack_callback_initialized_t)(linewriter_t&);
 
-typedef struct {
-    uint64_t allocSizeThreshold;
-    unsigned int numFuncName;
-    unsigned int maxLengthPlusTwo;
-    const char *funcNameStrings[HEAPTRACK_FUNCTION_NAME_FILTER_MAX_SIZE];
-    unsigned int funcNameLengths[HEAPTRACK_FUNCTION_NAME_FILTER_MAX_SIZE];
-} heaptrack_3rd_config_t;
+struct Ht3rdConfig
+{
+    uint64_t allocSizeThreshold = 0;
+    unsigned int numFuncName = 0;
+    unsigned int maxLengthPlusTwo = 2;
+    const char *funcNameStrings[HEAPTRACK_FUNCTION_NAME_FILTER_MAX_SIZE] = {nullptr};
+    unsigned int funcNameLengths[HEAPTRACK_FUNCTION_NAME_FILTER_MAX_SIZE] = {0};
+};
 
-extern heaptrack_3rd_config_t ht3config;
+__attribute__((weak)) Ht3rdConfig& ht3config()
+{
+    static Ht3rdConfig config;
+    return config;
+}
 
 void heaptrack_init(
     const char* outputFileName,

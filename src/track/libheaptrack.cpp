@@ -894,8 +894,8 @@ void heaptrack_resume()
 
 bool is_ignored_by_size(size_t size)
 {
-    if (ht3config.allocSizeThreshold) {
-        if (size < ht3config.allocSizeThreshold) {
+    if (ht3config().allocSizeThreshold) {
+        if (size < ht3config().allocSizeThreshold) {
             return true;
         }
     }
@@ -904,7 +904,7 @@ bool is_ignored_by_size(size_t size)
 
 bool is_ignored_by_current_stack()
 {
-    return Trace::isSomeProcListed(ht3config.funcNameStrings, ht3config.funcNameLengths, ht3config.numFuncName, ht3config.maxLengthPlusTwo);
+    return Trace::isSomeProcListed(ht3config().funcNameStrings, ht3config().funcNameLengths, ht3config().numFuncName, ht3config().maxLengthPlusTwo);
 }
 
 void heaptrack_malloc(void* ptr, size_t size)

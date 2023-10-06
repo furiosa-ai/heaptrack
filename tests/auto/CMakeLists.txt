@@ -53,6 +53,7 @@ if ("${Boost_FILESYSTEM_FOUND}" AND "${Boost_SYSTEM_FOUND}")
             ${LIBUTIL_LIBRARY}
             heaptrack_unwind
             rt
+            tsl::robin_map
             ${Boost_SYSTEM_LIBRARY}
             ${Boost_FILESYSTEM_LIBRARY}
     )

@@ -74,10 +74,6 @@ __attribute__((weak)) void* mi_realloc(void* p, size_t newsize) LIBC_FUN_ATTRS;
 __attribute__((weak)) void mi_free(void* p) LIBC_FUN_ATTRS;
 }
 
-extern "C" {
-    heaptrack_3rd_config_t ht3config = {0, 0, 2, {}, {}};
-}
-
 namespace {
 
 namespace Elf {
