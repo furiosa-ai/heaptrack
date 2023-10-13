@@ -1,0 +1,9 @@
+Package: heaptrack-furiosa
+Version: 1.0-1
+Maintainer: Jeong Seunghyeon <sh.jeong@furiosa.ai>
+Description: Modified version of KDE/Heaptrack
+Architecture: amd64
+Section: utils
+Priority: optional
+Depends: zlib1g, libzstd1, elfutils, libboost-all-dev, libunwind8, libkf5itemmodels5, libkf5threadweaver5, libkf5configwidgets5, kio, libkf5iconthemes5, libkchart2
+

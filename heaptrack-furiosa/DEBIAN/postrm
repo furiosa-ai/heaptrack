@@ -1,0 +1,13 @@
+#!/bin/bash
+
+case "$1" in
+remove)
+  rm /usr/bin/heaptrack /usr/bin/heaptrack_gui /usr/bin/heaptrack_print
+  ;;
+purge)
+  rm /usr/bin/heaptrack /usr/bin/heaptrack_gui /usr/bin/heaptrack_print
+  ;;
+*)
+  echo "Unrecognized postrm argument '$1'"
+esac
+

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+case "$1" in
+configure)
+  ln -s /usr/share/heaptrack-furiosa/build/bin/heaptrack /usr/bin/heaptrack
+  ln -s /usr/share/heaptrack-furiosa/build/bin/heaptrack_gui /usr/bin/heaptrack_gui
+  ln -s /usr/share/heaptrack-furiosa/build/bin/heaptrack_print /usr/bin/heaptrack_print
+  ;;
+upgrade)
+  ;;
+*)
+  echo "Unrecognized postinst argument '$1'"
+esac
+
