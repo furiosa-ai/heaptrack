@@ -9,6 +9,7 @@
  */
 
 #include "trace.h"
+#include "libheaptrack.h"
 
 #include "util/libunwind_config.h"
 
@@ -48,9 +49,9 @@ void Trace::print()
 #endif
 }
 
-bool Trace::isSomeProcListed(const char **strings, const unsigned int *lengths, unsigned int listSize, unsigned int maxLengthPlusTwo)
+bool Trace::isSomeProcListed()
 {
-    if (listSize == 0) {
+    if (!HtExtUtil().isFunctionNameBlacklistSet()) {
         return false;
     }
 #if LIBUNWIND_HAS_UNW_GETCONTEXT && LIBUNWIND_HAS_UNW_INIT_LOCAL
@@ -58,15 +59,12 @@ bool Trace::isSomeProcListed(const char **strings, const unsigned int *lengths, 
     unw_word_t offset;
     unw_getcontext(&context);
     unw_init_local(&cursor, &context);
-    char buf[HEAPTRACK_PRELOAD_FUNCTION_NAME_FILTER_MAX_LENGTH];
+    char buf[HEAPTRACK_PRELOAD_FUNCTION_NAME_BLACKLIST_MAX_NAME_LENGTH];
+    size_t minLengthToSearch = HtExtUtil().minFunctionNameBufferLengthToSearch();
     while (unw_step(&cursor)) {
-        unw_get_proc_name(&cursor, buf, maxLengthPlusTwo, &offset);
-        for (unsigned int i = 0; i < listSize; i++) {
-            if (strncmp(buf, strings[i], lengths[i]) == 0) {
-                if (buf[lengths[i]] == '\0') {
-                    return true;
-                }
-            }
+        unw_get_proc_name(&cursor, buf, minLengthToSearch, &offset);
+        if (HtExtUtil().isIgnoredByFuncName(buf)) {
+            return true;
         }
     }
     return false;

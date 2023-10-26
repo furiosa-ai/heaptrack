@@ -168,46 +168,11 @@ void init()
 
     // Setting allocation size threshold
     const char *const allocSizeThresholdEnv = getenv("HEAPTRACK_PRELOAD_ALLOC_SIZE_THRESHOLD");
-    if (allocSizeThresholdEnv) {
-        ht3config().allocSizeThreshold = atoi(allocSizeThresholdEnv);
-    } else {
-        ht3config().allocSizeThreshold = 0;
-    }
+    HtExtUtil().setAllocSizeThreshold(allocSizeThresholdEnv);
 
     // Setting function name blacklist
     const char *const funcNameFilterEnv = getenv("HEAPTRACK_PRELOAD_FUNCTION_NAME_BLACKLIST");
-    if (funcNameFilterEnv) {
-        unsigned int maxLength = 0;
-        const char **funcNameStringsCursor = ht3config().funcNameStrings;
-        unsigned int *funcNameLengthsCursor = ht3config().funcNameLengths;
-        const char *pc = funcNameFilterEnv;
-        const char *funcNameString = pc;
-        while (true) {
-            if (*pc == ':' || *pc == ' ' || *pc == '\n' || *pc == '\0') {
-                if (pc != funcNameString) {
-                    *funcNameStringsCursor = funcNameString;
-                    funcNameStringsCursor++;
-                    *funcNameLengthsCursor = pc - funcNameString;
-                    if (*funcNameLengthsCursor > maxLength) {
-                        maxLength = *funcNameLengthsCursor;
-                    }
-                    funcNameLengthsCursor++;
-                    ht3config().numFuncName++;
-                    if (ht3config().numFuncName == HEAPTRACK_FUNCTION_NAME_FILTER_MAX_SIZE) {
-                        break;
-                    }
-                }
-                funcNameString = pc + 1;
-                if (*pc == '\0') {
-                    break;
-                }
-            }
-            pc++;
-        }
-        ht3config().maxLengthPlusTwo = maxLength + 2;
-    } else {
-        ht3config().numFuncName = 0;
-    }
+    HtExtUtil().setFunctionNameBlacklist(funcNameFilterEnv);
     
     heaptrack_init(
         getenv("DUMP_HEAPTRACK_OUTPUT"),

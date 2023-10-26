@@ -892,27 +892,12 @@ void heaptrack_resume()
     HeapTrack::setPaused(false);
 }
 
-bool is_ignored_by_size(size_t size)
-{
-    if (ht3config().allocSizeThreshold) {
-        if (size < ht3config().allocSizeThreshold) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool is_ignored_by_current_stack()
-{
-    return Trace::isSomeProcListed(ht3config().funcNameStrings, ht3config().funcNameLengths, ht3config().numFuncName, ht3config().maxLengthPlusTwo);
-}
-
 void heaptrack_malloc(void* ptr, size_t size)
 {
-    if (is_ignored_by_size(size)) {
+    if (HtExtUtil().isIgnoredByAllocSize(size)) {
         return;
     }
-    if (is_ignored_by_current_stack()) {
+    if (Trace::isSomeProcListed()) {
         return;
     }
     
@@ -941,11 +926,11 @@ void heaptrack_free(void* ptr)
 
 void heaptrack_realloc(void* ptr_in, size_t size, void* ptr_out)
 {
-    if (is_ignored_by_size(size)) {
+    if (HtExtUtil().isIgnoredByAllocSize(size)) {
         heaptrack_free(ptr_in);
         return;
     }
-    if (is_ignored_by_current_stack()) {
+    if (Trace::isSomeProcListed()) {
         heaptrack_free(ptr_in);
         return;
     }
