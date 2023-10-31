@@ -1,3 +1,9 @@
+> [!IMPORTANT]
+>
+> **This is a forked version of [KDE/heaptrack](https://github.com/KDE/heaptrack) with [additional features](#extension).**
+>
+>
+
 # heaptrack - a heap memory profiler for Linux
 
 ![heaptrack_gui summary page](screenshots/gui_summary.png?raw=true "heaptrack_gui summary page")
@@ -242,3 +248,34 @@ will see garbage backtraces that are completely broken.
 If you encounter such issues, try to relink your application and also libunwind with `ld.bfd` instead of `ld.gold`.
 You can see if you are affected by running the libunwind unit tests via `make check`. But do note that you
 need to relink your application too, not only libunwind.
+
+## <a id="extension"></a>Additional features
+
+### Allocation size threshold
+
+If `heaptrack` started tracing from the beginning of the profiled application
+with an environment variable `HEAPTRACK_PRELOAD_ALLOC_SIZE_THRESHOLD` set,
+**`heaptrack` will NOT trace any heap memory allocation with the size
+smaller than `HEAPTRACK_PRELOAD_ALLOC_SIZE_THRESHOLD` bytes**.
+
+#### Example
+
+```
+$ HEAPTRACK_PRELOAD_ALLOC_SIZE_THRESHOLD=1024 heaptrack <your application and its parameters>
+```
+
+### Function name blacklist
+
+If `heaptrack` started tracing from the beginning of the profiled application
+with an environment variable `HEAPTRACK_PRELOAD_FUNCTION_NAME_BLACKLIST` set,
+**`heaptrack` will NOT trace any heap memory allocation if current call stack contains
+some return pointers to some functions listed in `HEAPTRACK_PRELOAD_FUNCTION_NAME_BLACKLIST`**.
+
+In `HEAPTRACK_PRELOAD_FUNCTION_NAME_BLACKLIST`,
+function names should be delimited by `':'`, `' '`(space character) or `'\n'`(newline character).
+
+#### Example
+
+```
+$ HEAPTRACK_PRELOAD_FUNCTION_NAME_BLACKLIST=foo:bar:foobar heaptrack <your application and its parameters>
+```

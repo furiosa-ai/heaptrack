@@ -31,3 +31,6 @@ build*/
 *.zst
 *.AppImage
 heaptrack_test/target
+
+# VSCode
+.vscode

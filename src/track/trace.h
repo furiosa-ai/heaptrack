@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 
 /**
  * @brief Backtrace interface.
@@ -70,6 +71,8 @@ struct Trace
     static void setup();
 
     static void print();
+
+    static bool isSomeProcListed();
 
 private:
     static int unwind(void** data);

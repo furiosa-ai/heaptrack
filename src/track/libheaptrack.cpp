@@ -54,6 +54,8 @@ namespace __gnu_cxx {
 __attribute__((weak)) extern void __freeres();
 }
 
+#include <tsl/robin_set.h>
+
 /**
  * uncomment this to get extended debug code for known pointers
  * there are still some malloc functions I'm missing apparently,
@@ -282,8 +284,12 @@ public:
         s_lock.unlock();
     }
 
-    void initialize(const char* fileName, heaptrack_callback_t initBeforeCallback,
-                    heaptrack_callback_initialized_t initAfterCallback, heaptrack_callback_t stopCallback)
+    void initialize(
+        const char* fileName,
+        heaptrack_callback_t initBeforeCallback,
+        heaptrack_callback_initialized_t initAfterCallback,
+        heaptrack_callback_t stopCallback
+    )
     {
         debugLog<MinimalOutput>("initializing: %s", fileName);
         if (s_data) {
@@ -524,6 +530,9 @@ public:
         if (!s_data || !s_data->out.canWrite()) {
             return;
         }
+        if (ptr == nullptr) {
+            return;
+        }
         updateModuleCache();
 
         const auto index = s_data->traceTree.index(trace, [](uintptr_t ip, uint32_t index) {
@@ -535,6 +544,8 @@ public:
 
             return s_data->out.writeHexLine('t', ip, index);
         });
+
+        s_data->allocations.insert(ptr);
 
 #ifdef DEBUG_MALLOC_PTRS
         auto it = s_data->known.find(ptr);
@@ -549,6 +560,15 @@ public:
     {
         if (!s_data || !s_data->out.canWrite()) {
             return;
+        }
+        if (ptr == nullptr) {
+            return;
+        }
+        auto it = s_data->allocations.find(ptr);
+        if (it == s_data->allocations.end()) {
+            return;
+        } else {
+            s_data->allocations.erase(it);
         }
 
 #ifdef DEBUG_MALLOC_PTRS
@@ -786,6 +806,8 @@ private:
 
         heaptrack_callback_t stopCallback = nullptr;
 
+        tsl::robin_set<void *> allocations;
+
 #ifdef DEBUG_MALLOC_PTRS
         tsl::robin_set<void*> known;
 #endif
@@ -824,8 +846,11 @@ static void heaptrack_realloc_impl(void* ptr_in, size_t size, void* ptr_out)
 
 extern "C" {
 
-void heaptrack_init(const char* outputFileName, heaptrack_callback_t initBeforeCallback,
-                    heaptrack_callback_initialized_t initAfterCallback, heaptrack_callback_t stopCallback)
+void heaptrack_init(
+    const char* outputFileName,
+    heaptrack_callback_t initBeforeCallback,
+    heaptrack_callback_initialized_t initAfterCallback,
+    heaptrack_callback_t stopCallback)
 {
     RecursionGuard guard;
     // initialize
@@ -869,6 +894,13 @@ void heaptrack_resume()
 
 void heaptrack_malloc(void* ptr, size_t size)
 {
+    if (HtExtUtil().isIgnoredByAllocSize(size)) {
+        return;
+    }
+    if (Trace::isSomeProcListed()) {
+        return;
+    }
+    
     if (!HeapTrack::isPaused() && ptr && !RecursionGuard::isActive) {
         RecursionGuard guard;
 
@@ -894,6 +926,14 @@ void heaptrack_free(void* ptr)
 
 void heaptrack_realloc(void* ptr_in, size_t size, void* ptr_out)
 {
+    if (HtExtUtil().isIgnoredByAllocSize(size)) {
+        heaptrack_free(ptr_in);
+        return;
+    }
+    if (Trace::isSomeProcListed()) {
+        heaptrack_free(ptr_in);
+        return;
+    }
     heaptrack_realloc_impl(ptr_in, size, ptr_out);
 }
 

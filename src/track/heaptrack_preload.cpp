@@ -165,6 +165,15 @@ void init()
     // heaptrack_init itself calls calloc via std::mutex/_libpthread_init on FreeBSD
     hooks::calloc.original = &dummy_calloc;
     hooks::calloc.init();
+
+    // Setting allocation size threshold
+    const char *const allocSizeThresholdEnv = getenv("HEAPTRACK_PRELOAD_ALLOC_SIZE_THRESHOLD");
+    HtExtUtil().setAllocSizeThreshold(allocSizeThresholdEnv);
+
+    // Setting function name blacklist
+    const char *const funcNameFilterEnv = getenv("HEAPTRACK_PRELOAD_FUNCTION_NAME_BLACKLIST");
+    HtExtUtil().setFunctionNameBlacklist(funcNameFilterEnv);
+    
     heaptrack_init(
         getenv("DUMP_HEAPTRACK_OUTPUT"),
         [] {
