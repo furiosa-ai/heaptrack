@@ -249,7 +249,7 @@ If you encounter such issues, try to relink your application and also libunwind 
 You can see if you are affected by running the libunwind unit tests via `make check`. But do note that you
 need to relink your application too, not only libunwind.
 
-## <a id="extension"></a>Additional features
+## Additional features
 
 ### Allocation size threshold
 
